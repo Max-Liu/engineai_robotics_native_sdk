@@ -42,18 +42,68 @@ native_sdk/
 
 ### 1.1 Container Environment
 
-Generate the container development environment. Upon completion, a shortcut entry `engineai_robotics_env` will be created:
+- **Install Docker and Docker Compose**  
+  Docker provides an automated setup script that supports installation on Debian, RHEL, SUSE and their derivatives.  
+  Note: Docker does not recommend using this script to install Docker CE in production.
+
+  ```bash
+  curl -fsSL https://get.docker.com -o get-docker.sh
+  sudo sh get-docker.sh
+
+  # Users in China may use a mirror (e.g. Tsinghua mirror)
+  export DOWNLOAD_URL="https://mirrors.tuna.tsinghua.edu.cn/docker-ce"
+  curl -fsSL https://get.docker.com -o get-docker.sh
+  sudo sh get-docker.sh
+  ```
+
+- **Allow running Docker without sudo**
+
+  ```bash
+  sudo usermod -aG docker $USER
+  ```
+
+  **After running this, you must log out of your desktop session and log back in (or reboot) for the group change to take effect.**
+
+- **Verify installation**
+
+  ```bash
+  docker --version
+  ```
+
+  Example output:
+
+  ```plain
+  Docker version 26.1.1
+  ```
+
+- **Verify Docker Compose**
+
+  ```bash
+  docker compose version
+  ```
+
+  Example output:
+
+  ```plain
+  Docker Compose version v2.27.0
+  ```
+
+- **Generate the container development environment.** Upon completion, a shortcut entry `engineai_robotics_env` will be created:
 
 ```bash
 cd native_sdk
 ./docker/generate.sh
 ```
+![Container development environment generation](docs/generate_docker.png)
+
+This command creates a container and mounts the current repository into it, so you can build and run the program inside the container.
 
 Open a new terminal and enter the development environment using the shortcut command:
 
 ```bash
 engineai_robotics_env
 ```
+![Inside the container development environment](docs/inside_docker.png)
 
 ### 1.2 Build
 

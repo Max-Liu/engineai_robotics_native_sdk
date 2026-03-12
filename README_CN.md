@@ -42,18 +42,55 @@ native_sdk/
 
 ### 1.1 容器环境
 
-生成容器开发环境，执行完成后会生成快捷入口 `engineai_robotics_env`：
+- 安装Docker和Docker Compose
+  Docker 提供了一个自动配置与安装的脚本，支持 Debian、RHEL、SUSE 系列及衍生系统的安装。
+  请注意，Docker 官方不建议在生产环境使用此脚本安装 Docker CE。
+  ```Bash
+  curl -fsSL https://get.docker.com -o get-docker.sh
+  sudo sh get-docker.sh
+
+  # 中国地区用户可使用镜像源(这里使用清华源)
+  export DOWNLOAD_URL="https://mirrors.tuna.tsinghua.edu.cn/docker-ce"
+  curl -fsSL https://get.docker.com -o get-docker.sh
+  sudo sh get-docker.sh 
+  ```
+- 设置免 sudo 运行
+    ```Bash
+    sudo usermod -aG docker $USER
+    ```
+        **执行后，需要注销当前桌面会话并重新登录或重启电脑才能使用户组变更生效**
+- 验证安装
+  ```Bash
+  docker --version
+  ```
+      示例输出
+  ```Plain
+  Docker version 26.1.1
+  ```
+- 验证 docker compose
+  ```Bash
+  docker compose version
+  ```
+      示例输出
+  ```Plain
+  Docker Compose version v2.27.0
+    ```
+- 生成容器开发环境，执行完成后会生成快捷入口 `engineai_robotics_env`：
 
 ```bash
 cd native_sdk
 ./docker/generate.sh
 ```
+![容器开发环境生成流程](docs/generate_docker.png)
+
+该命令会自动创建一个容器，将当前仓库路径映射到容器中，即可以容器中构建-运行程序。
 
 启动一个新终端，通过快捷命令即可进入开发环境：
 
 ```bash
 engineai_robotics_env
 ```
+![容器开发环境生成流程](docs/inside_docker.png)
 
 ### 1.2 编译
 
@@ -90,17 +127,19 @@ engineai_robotics_env
 
 #### 状态切换概览
 
-| 当前状态 | 允许切换到状态 | 触发按键 | 说明 |
-|:--------:|:--------------:|:--------:|:-----|
-| idle | passive | LB + RB | 从未激活状态过渡到阻尼态 |
-| passive | idle | LB + START | 回到未激活状态 |
-| passive | pd_stand | LB + A | 进入稳定站立控制任务 |
-| pd_stand | walk | LB + B | 建立稳定站立后，进入行走任务 |
-| pd_stand | dance | LB + CROSS_X_DOWN | 建立稳定站立后，进入跳舞任务 |
-| walk | pd_stand | LB + A | 从行走任务回到稳定站立控制任务 |
-| walk | dance | LB + CROSS_X_DOWN | 从行走任务切换到跳舞任务 |
-| dance | pd_stand | LB + A | 从舞蹈任务回到稳定站立控制任务 |
-| dance | walk | LB + B | 从舞蹈任务切换到行走任务 |
+
+| 当前状态     | 允许切换到状态  | 触发按键              | 说明              |
+| -------- | -------- | ----------------- | --------------- |
+| idle     | passive  | LB + RB           | 从未激活状态过渡到阻尼态    |
+| passive  | idle     | LB + START        | 回到未激活状态         |
+| passive  | pd_stand | LB + A            | 进入稳定站立控制任务      |
+| pd_stand | walk     | LB + B            | 建立稳定站立后，进入行走任务  |
+| pd_stand | dance    | LB + CROSS_X_DOWN | 建立稳定站立后，进入跳舞任务  |
+| walk     | pd_stand | LB + A            | 从行走任务回到稳定站立控制任务 |
+| walk     | dance    | LB + CROSS_X_DOWN | 从行走任务切换到跳舞任务    |
+| dance    | pd_stand | LB + A            | 从舞蹈任务回到稳定站立控制任务 |
+| dance    | walk     | LB + B            | 从舞蹈任务切换到行走任务    |
+
 
 #### 状态流转示意
 
@@ -127,9 +166,11 @@ stateDiagram-v2
     note right of passive : 任意状态均可通过\nLB + RB 回到 passive
 ```
 
+
+
 #### 全局安全机制（Emergency Fallback）
 
-> **任意状态**都可通过 **`LB + RB`** 强制切换到 `passive` 状态。
+> **任意状态**都可通过 `**LB + RB`** 强制切换到 `passive` 状态。
 
 此功能类似 **软急停（Soft Emergency Stop）**：
 
@@ -229,6 +270,7 @@ cd native_sdk
 
 > [!CAUTION]
 > **安全提示：**
+>
 > - 确保所有人员与机器人保持安全距离
 > - 若机器人动作异常，随时快速停止（按急停键或切回 `passive` 模式）
 > - 建议先用吊架吊起机器人，在进入 `pd_stand` 模式之后放到地上，再切入行走模式
