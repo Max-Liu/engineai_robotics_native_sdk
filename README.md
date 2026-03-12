@@ -2,6 +2,8 @@
 
 [中文](README_CN.md) | English
 
+**Documentation:** [EngineAI Native SDK Documentation](https://dx3a2bminsq.feishu.cn/wiki/KyD9wDc4mi03uXkTVuAc5LQan4C)
+
 ## Overview
 
 This repository provides the EngineAI Native Control SDK, designed for humanoid robot application development and system integration. It delivers a lightweight, easily deployable control and task execution framework with strong extensibility. Through standardized interfaces and modular architecture, the SDK significantly reduces the complexity of secondary development and functional integration, allowing developers to focus on algorithm research and application implementation.

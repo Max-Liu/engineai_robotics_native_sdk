@@ -2,6 +2,8 @@
 
 中文 | [English](README.md)
 
+**文档：** [EngineAI Native SDK 文档](https://dx3a2bminsq.feishu.cn/wiki/KyD9wDc4mi03uXkTVuAc5LQan4C)
+
 ## 概述
 
 本仓库为 EngineAI 机器人原生控制 SDK，面向人形机器人应用开发与系统集成，提供轻量化、易部署且具备良好扩展能力的控制与任务运行框架。该 SDK 通过标准化接口与模块化架构设计，有效降低机器人系统二次开发与功能集成的复杂度，使开发者能够更加专注于算法研发与应用功能实现。
