@@ -26,6 +26,7 @@ struct ObsEntry {
 static void ComputeImuInBody(const ObsContext& ctx, Eigen::Matrix3d* R_real, Eigen::Vector3d* w_real,
                              Eigen::Vector3d* projected_gravity) {
   if (!ctx.data_store || !R_real || !w_real || !projected_gravity) return;
+
   Eigen::Matrix3d R_install = math::RotationMatrixd(math::RollPitchYawd(ctx.imu_install_bias)).matrix();
   Eigen::Matrix3d R_local = math::RotationMatrixd(ctx.data_store->imu_info.Get()->quaternion).matrix();
   *R_real = R_local * R_install.transpose();

@@ -25,6 +25,7 @@ class RlDanceExampleParam : public BasicParam {
   std::vector<std::string> LOAD_PARAM(observation_names);
   std::vector<int> LOAD_PARAM(observation_history_lengths);
   Eigen::VectorXd LOAD_PARAM(action_scale);
+  bool LOAD_PARAM(resident_control);
 
   int num_actions;
 };

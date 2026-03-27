@@ -44,9 +44,17 @@ if [ -d "${local_assets_dir}/config/$product_name" ]; then
     mkdir -p "${temp_dir}/assets/config"
     rsync -av "${local_assets_dir}/config/$product_name" "${temp_dir}/assets/config/"
 
-    # urdf
-    mkdir -p "${temp_dir}/assets/resource/robot/$product_name"
-    rsync -av "${local_assets_dir}/resource/robot/$product_name/urdf" "${temp_dir}/assets/resource/robot/$product_name"
+    # Copy the whole robot resource directory so URDF, meshes and auxiliary XML stay in sync.
+    mkdir -p "${temp_dir}/assets/resource/robot"
+    if [ -d "${local_assets_dir}/resource/robot/$product_name" ]; then
+        rsync -av "${local_assets_dir}/resource/robot/$product_name" "${temp_dir}/assets/resource/robot/"
+    fi
+
+    # Copy optional top-level mujoco xml for this product when available.
+    mkdir -p "${temp_dir}/assets/resource"
+    if [ -f "${local_assets_dir}/resource/${product_name}.xml" ]; then
+        rsync -av "${local_assets_dir}/resource/${product_name}.xml" "${temp_dir}/assets/resource/"
+    fi
 else
     echo "Error: Product directory ${local_assets_dir}/config/$product_name does not exist"
     exit 1

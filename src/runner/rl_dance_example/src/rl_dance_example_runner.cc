@@ -178,7 +178,8 @@ void RlDanceExampleRunner::Run() {
   CalculateMotorCommand();  // Run policy inference and compute target positions
   SendMotorCommand();       // Send PD commands to motors
 
-  // Advance trajectory frame, clamped to the last frame
+  // Advance trajectory frame and loop back to the start.
+  // policy_step = (policy_step >= max_policy_step) ? 0 : policy_step + 1;
   policy_step = std::min(policy_step + 1, max_policy_step);
 }
 
@@ -293,10 +294,11 @@ void RlDanceExampleRunner::updateFirstFrameYawAlignment() {
  *   1. Read current joint positions and velocities (for state feedback)
  *   2. Forward the assembled observation vector through the MNN model
  *   3. Map the action output to target joint positions:
- *      q_des[active_joints] = default_q + action * action_scale
+ *      q_des[active_joints] = ref_joint_pos + action * action_scale
  *
- * @note Unlike the walking Runner, the dance Runner does NOT clip actions here.
- *       Action clipping (if needed) should be configured during training export.
+ * @note This matches the tracking training task where the policy outputs a residual
+ *       around the reference trajectory joint positions, not an absolute joint target
+ *       around the default pose.
  */
 void RlDanceExampleRunner::CalculateMotorCommand() {
   // Read current joint state (used internally by some observation functions
@@ -308,9 +310,17 @@ void RlDanceExampleRunner::CalculateMotorCommand() {
   *mlp_net_action_ = (mlp_net_->Inference(mlp_net_observation_vec.cast<float>())).cast<double>();
 
   // Map action to target joint positions:
-  //   q_des = default_q + action * action_scale (for policy-controlled joints only)
+  //   q_des = ref_joint_pos + action * action_scale (for policy-controlled joints only)
+
   q_des_ = *default_joint_q_;
-  q_des_(*policy2deploy_joint_idx_) += mlp_net_action_->cwiseProduct(action_scale_);
+  if (param_->resident_control) {
+    const int ref_step = std::min(policy_step, max_policy_step);
+    const Eigen::VectorXd ref_joint_pos = ref_joint_pos_all_->row(ref_step);
+    const Eigen::VectorXd scaled_action = mlp_net_action_->cwiseProduct(action_scale_);
+    q_des_(*policy2deploy_joint_idx_) = ref_joint_pos + scaled_action;
+  } else {
+    q_des_(*policy2deploy_joint_idx_) += mlp_net_action_->cwiseProduct(action_scale_);
+  }
 }
 
 /**

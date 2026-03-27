@@ -141,7 +141,7 @@
         <light name="spotlight" mode="targetbodycom" target="LINK_BASE" pos="0 -1 2"/>
         <body name="LINK_BASE" pos="0 0 0.82">
             <inertial pos="0.01525750 -0.00001621 -0.02333111" mass="4.08640035" fullinertia="0.02021593 0.01531282 0.01216285 -0.00000120 -0.00037784 -0.00000295"/>
-            <geom type="mesh" rgba="0.75294 0.75294 0.75294 1" mesh="LINK_BASE" class="visual"/>
+            <geom type="mesh" rgba="0.75294 0.75294 0.75294 1" mesh="LINK_BASE" material="LINK_BASE" class="visual"/>
             <geom class="collision_base_lower_box"/>
             <site name="base" pos="0 0 0"/>
             <site name="imu" pos="0.02311 0 -0.09631"/>
