@@ -135,6 +135,24 @@ engineai_robotics_env
 After program startup, the robot switches between different motion states via remote controller commands. The Native SDK uses a **Finite State Machine (FSM) mechanism**:
 
 - Each motion state defines explicit entry conditions and allowed state transitions. The system only permits state switching when conditions are met, ensuring the safety and stability of robot motion control.
+#### Remote Controller
+
+##### Physical Gamepad (Logitech F710)
+- Use Logitech Wireless Gamepad F710 (Xbox mode)
+- Automatically recognized after inserting the USB receiver
+- All state transitions triggered by handpad buttons
+
+##### Virtual Gamepad (Virtual Gamepad UI)
+- Provides a graphical virtual gamepad interface
+- Supports keyboard button and slider input simulation
+- Uses the same control mapping relationship as F710 (XBox mode), with full control logic compatibility
+
+```bash
+# in docker
+python3 tools/virtual_gamepad/virtual_gamepad.py
+```
+
+![Virtual Gamepad Interface](docs/virtual_gamepad.png)
 
 #### System Startup
 

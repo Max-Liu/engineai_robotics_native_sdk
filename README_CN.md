@@ -123,6 +123,25 @@ engineai_robotics_env
 
 - 每个动作状态均定义了明确的进入条件与允许的状态转移路径，只有满足条件时系统才允许切换状态，以保证机器人运动控制的安全性与稳定性。
 
+#### 遥控器说明
+
+##### 实体手柄（Logitech F710）
+- 使用 Logitech Wireless Gamepad F710（Xbox 模式） 
+- 插入 USB 接收器后系统自动识别 
+- 所有状态切换通过手柄按键触发
+
+##### 虚拟手柄（Virtual Gamepad UI）
+- 提供图形化虚拟手柄界面
+- 支持通过键盘按键和滑条模拟手柄输入
+- 与 F710（XBox 模式）采用一致的控制映射关系，控制逻辑完全兼容
+
+```bash
+# in docker
+python3 tools/virtual_gamepad/virtual_gamepad.py
+```
+
+![虚拟手柄界面](docs/virtual_gamepad.png)
+
 #### 系统启动
 
 执行 `./run.sh` 或 `./run_robot.sh` 后，系统默认进入 **idle** 状态。`idle` 是机器人上电后的初始安全状态，控制器未激活主动运动控制。
