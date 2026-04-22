@@ -142,6 +142,38 @@ After program startup, the robot switches between different motion states via re
 - Automatically recognized after inserting the USB receiver
 - All state transitions triggered by handpad buttons
 
+##### Physical Gamepad on macOS
+macOS supports connecting various Bluetooth/USB gamepads (e.g. DUALSHOCK 4, Xbox controllers). The virtual gamepad tool includes a **gamepad bridge** that reads physical controller input on macOS and publishes LCM messages into the Docker container.
+
+**List connected gamepads:**
+
+```bash
+python3 tools/virtual_gamepad/virtual_gamepad.py --list-gamepads
+```
+
+**Run the gamepad bridge without GUI:**
+
+```bash
+python3 tools/virtual_gamepad/virtual_gamepad.py --no-gui --lcm-url 'udpm://239.255.76.67:7667?ttl=1'
+```
+
+**For Bluetooth DUALSHOCK 4 (when pygame/SDL does not recognize it), use the HID backend:**
+
+```bash
+python3 tools/virtual_gamepad/virtual_gamepad.py --no-gui --backend hid --lcm-url 'udpm://239.255.76.67:7667?ttl=1'
+```
+
+> **Note:** If the HID backend reports `Failed to open DUALSHOCK 4 HID input device`, grant **Input Monitoring** permission to Terminal/Codex in macOS System Settings, then reconnect the controller.
+
+**When Docker Desktop blocks host-to-container multicast/UDP, use the docker-exec relay:**
+
+```bash
+python3 tools/virtual_gamepad/virtual_gamepad.py --no-gui --backend hid \
+  --docker-container engineai_robotics_env
+```
+
+For full CLI options and controller calibration, see [tools/virtual_gamepad/README.md](tools/virtual_gamepad/README.md).
+
 ##### Virtual Gamepad (Virtual Gamepad UI)
 - Provides a graphical virtual gamepad interface
 - Supports keyboard button and slider input simulation
@@ -236,7 +268,33 @@ engineai_robotics_env
 
 After launching, use the remote controller to switch states.
 
-#### 1.5.3 Improving Simulation Performance
+#### 1.5.3 Running MuJoCo Simulation on macOS
+
+macOS + Docker Desktop does not support native GUI display from containers. Use the built-in VNC remote viewing to run MuJoCo headless and access it via your browser.
+
+**Start MuJoCo simulation with VNC:**
+
+```bash
+./scripts/start_mujoco_vnc.sh
+```
+
+This script:
+1. Builds the MuJoCo simulation module (if not already built)
+2. Starts the container with Xvfb (virtual framebuffer) + x11vnc
+3. Launches a noVNC WebSocket proxy on your Mac
+4. Opens your browser to `http://localhost:6080/vnc.html`
+
+Click **Connect** (no password required) to see and interact with the simulation.
+
+**Stop the VNC session:**
+
+```bash
+./scripts/start_mujoco_vnc.sh --stop
+```
+
+> **Requirements:** `pip3 install websockets` on your Mac. The proxy extracts noVNC static files from the container automatically on first run.
+
+#### 1.5.4 Improving Simulation Performance
 
 If you have a dedicated NVIDIA GPU with proper drivers installed, you can enable GPU passthrough in Docker to improve simulation rendering frame rates.
 
