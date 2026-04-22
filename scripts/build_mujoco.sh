@@ -18,7 +18,7 @@ if ! has_local_mujoco_deps && [ -f "$deps_archive" ]; then
   tar -xf "$deps_archive" -C "$mujoco_dir"
 fi
 
-cmake_args=(-DBUILD_RELEASE=ON)
+cmake_args=(-DBUILD_RELEASE=ON -DMUJOCO_ENABLE_LTO=OFF)
 if has_local_mujoco_deps; then
   echo "Using local MuJoCo deps from $deps_dir"
   cmake_args+=(-DMUJOCO_USE_LOCAL_DEPS=ON)
@@ -34,5 +34,5 @@ num_cores=$(expr $(nproc) - 2)
 if [ $num_cores -lt 1 ]; then
   num_cores=$(nproc)
 fi
-make -j$num_cores
+cmake --build . --parallel $num_cores
 

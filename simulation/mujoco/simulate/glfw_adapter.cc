@@ -56,9 +56,9 @@ GlfwAdapter::GlfwAdapter() {
   // get video mode and save
   vidmode_ = *Glfw().glfwGetVideoMode(Glfw().glfwGetPrimaryMonitor());
 
-  // create window
-  window_ = Glfw().glfwCreateWindow((2 * vidmode_.width) / 3,
-                                    (2 * vidmode_.height) / 3,
+  // create window — fill the full virtual display (important for Xvfb/VNC)
+  window_ = Glfw().glfwCreateWindow(vidmode_.width,
+                                    vidmode_.height,
                                     "MuJoCo", nullptr, nullptr);
   if (!window_) {
     mju_error("could not create window");

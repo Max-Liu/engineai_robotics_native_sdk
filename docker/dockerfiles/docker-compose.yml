@@ -14,10 +14,11 @@ services:
     working_dir: ${WORKSPACE_DIR}
     privileged: true
     network_mode: host
+    platform: linux/amd64
     volumes:
-      - "/home/${USER_NAME}/.Xauthority:/home/${USER_NAME}/.Xauthority"
-      - "/home/${USER_NAME}/.ssh:/home/${USER_NAME}/.ssh"
-      - "/home/${USER_NAME}/.gitconfig:/home/${USER_NAME}/.gitconfig"
+      - "${USER_HOME}/.Xauthority:${USER_HOME}/.Xauthority"
+      - "${USER_HOME}/.ssh:${USER_HOME}/.ssh"
+      - "${USER_HOME}/.gitconfig:${USER_HOME}/.gitconfig"
       - "/etc/localtime:/etc/localtime"
       - "/var/cache/ccache:/var/cache/ccache"
       - "/tmp/:/tmp/"
