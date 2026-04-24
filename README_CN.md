@@ -327,6 +327,62 @@ tail -f nohup.out
 
 运行后即可根据 [状态切换说明](#14-状态切换说明)，利用遥控器按键切换动作。
 
+### 1.7 数据监测与 ROS2 接入
+
+当前Native SDK支持将机器人运行数据通过 ROS2 接口发布，并结合 PlotJuggler 实现实时可视化。
+
+#### 1.7.1 ROS2 环境初始化
+
+Native SDK 在构建过程中会自动生成 ROS2 消息接口（msg），用于对外数据通信。
+在使用 ROS2 工具（如 PlotJuggler）进行数据订阅前，需要先完成环境加载：
+
+```bash
+# 进入容器
+engineai_robotics_env
+
+# 编译（生成 ROS2 msg 与环境）
+./build.sh
+
+# 加载 ROS2 环境
+source build/ros2_env/install/setup.bash
+```
+
+#### 1.7.2 ROS2 Topic 列表
+
+当前 Native SDK 对外提供以下 ROS2 Topic，用于状态获取与控制交互：
+
+| Topic名称 | 消息文件 | 通信方式 | 概述 |
+| --- | --- | --- | --- |
+| /hardware/joint_state | interface_protocol/msg/JointState | 订阅 | 接收所有关节的当前状态信息（位置、速度、力矩） |
+| /hardware/joint_command | interface_protocol/msg/JointCommand | 发布 | 发送关节控制命令，控制所有关节的运动 |
+| /hardware/gamepad_keys | interface_protocol/msg/GamepadKeys | 订阅 | 手柄数据 |
+| /hardware/imu_info | interface_protocol/msg/ImuInfo | 订阅 | IMU数据 |
+| /hardware/power_info | interface_protocol/msg/PowerInfo | 订阅 | 电源/电池数据 |
+| /hardware/motor_debug | interface_protocol/msg/MotorDebug | 订阅 | 电机调试数据 |
+
+#### 1.7.3 数据可视化（PlotJuggler）
+
+当前 Native SDK 发布的 ROS2 Topic 可通过 PlotJuggler 进行实时可视化：
+典型流程：
+1. 启动 Native SDK（./run.sh 或 ./run_robot.sh）
+2. 启动 PlotJuggler
+
+```bash
+# 进入容器
+engineai_robotics_env
+
+# 启动 PlotJuggler
+./scripts/run_plotjuggler.sh
+
+# 启动 PlotJuggler, 添加多机调试环境
+./scripts/run_plotjuggler.sh remote
+```
+
+3. 选择 ROS2 数据源
+4. 选择 Native SDK提供的layout
+  - layout文件在: scripts/plotjuggler/common_data_display.xml
+
+  
 ## 许可证
 
 本项目基于 [BSD 3-Clause 许可证](LICENSE.txt) 开源。
