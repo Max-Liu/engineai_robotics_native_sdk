@@ -46,6 +46,7 @@ tasks:
   - passive
   - pd_stand
   - dance
+  - stamp
   key: [ LB, B ]
 
 - motion: dance
@@ -59,3 +60,15 @@ tasks:
   - walk
   auto_transition: walk
   key: [ RB, B ]
+
+- motion: stamp
+  period: 0.03333333333
+  runner:
+  - name: motion_stamp_runner
+    enabled: true
+  manual_transition:
+  - passive
+  - pd_stand
+  - walk
+  auto_transition: walk
+  key: [ RB, A ]

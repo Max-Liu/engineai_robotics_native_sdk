@@ -1,0 +1,191 @@
+policy_file: "motion_stamp/policies/policy.mnn"
+trajectory_file_npz: "motion_stamp/trajectories/stamp.npz"
+
+# stamp.npz is exported in model limb order. The policy model consumes the
+# interleaved order in joint_names, so the runner reorders trajectory columns
+# by this list before building the command observation.
+trajectory_joint_names:
+  [
+    "J00_HIP_PITCH_L",
+    "J01_HIP_ROLL_L",
+    "J02_HIP_YAW_L",
+    "J03_KNEE_PITCH_L",
+    "J04_ANKLE_PITCH_L",
+    "J05_ANKLE_ROLL_L",
+    "J06_HIP_PITCH_R",
+    "J07_HIP_ROLL_R",
+    "J08_HIP_YAW_R",
+    "J09_KNEE_PITCH_R",
+    "J10_ANKLE_PITCH_R",
+    "J11_ANKLE_ROLL_R",
+    "J12_WAIST_YAW",
+    "J13_SHOULDER_PITCH_L",
+    "J14_SHOULDER_ROLL_L",
+    "J15_SHOULDER_YAW_L",
+    "J16_ELBOW_PITCH_L",
+    "J17_ELBOW_YAW_L",
+    "J18_SHOULDER_PITCH_R",
+    "J19_SHOULDER_ROLL_R",
+    "J20_SHOULDER_YAW_R",
+    "J21_ELBOW_PITCH_R",
+    "J22_ELBOW_YAW_R",
+    "J23_HEAD_YAW",
+  ]
+
+joint_names:
+  [
+    "J00_HIP_PITCH_L",
+    "J06_HIP_PITCH_R",
+    "J12_WAIST_YAW",
+    "J01_HIP_ROLL_L",
+    "J07_HIP_ROLL_R",
+    "J13_SHOULDER_PITCH_L",
+    "J18_SHOULDER_PITCH_R",
+    "J23_HEAD_YAW",
+    "J02_HIP_YAW_L",
+    "J08_HIP_YAW_R",
+    "J14_SHOULDER_ROLL_L",
+    "J19_SHOULDER_ROLL_R",
+    "J03_KNEE_PITCH_L",
+    "J09_KNEE_PITCH_R",
+    "J15_SHOULDER_YAW_L",
+    "J20_SHOULDER_YAW_R",
+    "J04_ANKLE_PITCH_L",
+    "J10_ANKLE_PITCH_R",
+    "J16_ELBOW_PITCH_L",
+    "J21_ELBOW_PITCH_R",
+    "J05_ANKLE_ROLL_L",
+    "J11_ANKLE_ROLL_R",
+    "J17_ELBOW_YAW_L",
+    "J22_ELBOW_YAW_R",
+  ]
+
+default_joint_pos:
+  - -0.06 # 00 J00_HIP_PITCH_L
+  - -0.06 # 01 J06_HIP_PITCH_R
+  - 0     # 02 J12_WAIST_YAW
+  - 0     # 03 J01_HIP_ROLL_L
+  - 0     # 04 J07_HIP_ROLL_R
+  - 0     # 05 J13_SHOULDER_PITCH_L
+  - 0     # 06 J18_SHOULDER_PITCH_R
+  - 0     # 07 J23_HEAD_YAW
+  - 0     # 08 J02_HIP_YAW_L
+  - 0     # 09 J08_HIP_YAW_R
+  - 0.15  # 10 J14_SHOULDER_ROLL_L
+  - -0.15 # 11 J19_SHOULDER_ROLL_R
+  - 0.12  # 12 J03_KNEE_PITCH_L
+  - 0.12  # 13 J09_KNEE_PITCH_R
+  - 0     # 14 J15_SHOULDER_YAW_L
+  - 0     # 15 J20_SHOULDER_YAW_R
+  - -0.06 # 16 J04_ANKLE_PITCH_L
+  - -0.06 # 17 J10_ANKLE_PITCH_R
+  - -0.25 # 18 J16_ELBOW_PITCH_L
+  - -0.25 # 19 J21_ELBOW_PITCH_R
+  - 0     # 20 J05_ANKLE_ROLL_L
+  - 0     # 21 J11_ANKLE_ROLL_R
+  - 0     # 22 J17_ELBOW_YAW_L
+  - 0     # 23 J22_ELBOW_YAW_R
+
+# PD gains aligned with IsaacLab training config (pm01.py).
+# Training uses ImplicitActuator with armature, so these are direct copies
+# of the training-side stiffness/damping values. May need fine-tuning on
+# real hardware due to sim-to-real actuator dynamics differences.
+#
+# Training groups:
+#   hip_pitch / hip_roll / knee → K=120, D=10
+#   hip_yaw / ankle / waist / shoulder / elbow / head → K=50, D=5
+#
+# Order matches joint_names above and the policy output order used by the runner.
+joint_stiffness:
+  - 120 # 00 J00_HIP_PITCH_L
+  - 120 # 01 J06_HIP_PITCH_R
+  - 50  # 02 J12_WAIST_YAW
+  - 120 # 03 J01_HIP_ROLL_L
+  - 120 # 04 J07_HIP_ROLL_R
+  - 50  # 05 J13_SHOULDER_PITCH_L
+  - 50  # 06 J18_SHOULDER_PITCH_R
+  - 50  # 07 J23_HEAD_YAW
+  - 50  # 08 J02_HIP_YAW_L
+  - 50  # 09 J08_HIP_YAW_R
+  - 50  # 10 J14_SHOULDER_ROLL_L
+  - 50  # 11 J19_SHOULDER_ROLL_R
+  - 120 # 12 J03_KNEE_PITCH_L
+  - 120 # 13 J09_KNEE_PITCH_R
+  - 50  # 14 J15_SHOULDER_YAW_L
+  - 50  # 15 J20_SHOULDER_YAW_R
+  - 50  # 16 J04_ANKLE_PITCH_L
+  - 50  # 17 J10_ANKLE_PITCH_R
+  - 50  # 18 J16_ELBOW_PITCH_L
+  - 50  # 19 J21_ELBOW_PITCH_R
+  - 50  # 20 J05_ANKLE_ROLL_L
+  - 50  # 21 J11_ANKLE_ROLL_R
+  - 50  # 22 J17_ELBOW_YAW_L
+  - 50  # 23 J22_ELBOW_YAW_R
+joint_damping:
+  - 10 # 00 J00_HIP_PITCH_L
+  - 10 # 01 J06_HIP_PITCH_R
+  - 5  # 02 J12_WAIST_YAW
+  - 10 # 03 J01_HIP_ROLL_L
+  - 10 # 04 J07_HIP_ROLL_R
+  - 5  # 05 J13_SHOULDER_PITCH_L
+  - 5  # 06 J18_SHOULDER_PITCH_R
+  - 5  # 07 J23_HEAD_YAW
+  - 5  # 08 J02_HIP_YAW_L
+  - 5  # 09 J08_HIP_YAW_R
+  - 5  # 10 J14_SHOULDER_ROLL_L
+  - 5  # 11 J19_SHOULDER_ROLL_R
+  - 10 # 12 J03_KNEE_PITCH_L
+  - 10 # 13 J09_KNEE_PITCH_R
+  - 5  # 14 J15_SHOULDER_YAW_L
+  - 5  # 15 J20_SHOULDER_YAW_R
+  - 5  # 16 J04_ANKLE_PITCH_L
+  - 5  # 17 J10_ANKLE_PITCH_R
+  - 5  # 18 J16_ELBOW_PITCH_L
+  - 5  # 19 J21_ELBOW_PITCH_R
+  - 5  # 20 J05_ANKLE_ROLL_L
+  - 5  # 21 J11_ANKLE_ROLL_R
+  - 5  # 22 J17_ELBOW_YAW_L
+  - 5  # 23 J22_ELBOW_YAW_R
+
+observation_names:
+  [
+    "command",
+    "motion_anchor_pos_b",
+    "motion_anchor_ori_b",
+    "base_lin_vel",
+    "base_ang_vel",
+    "joint_pos",
+    "joint_vel",
+    "actions",
+  ]
+observation_history_lengths: [1, 1, 1, 1, 1, 1, 1, 1]
+
+action_scale:
+  - 0.5 # 00 J00_HIP_PITCH_L
+  - 0.5 # 01 J06_HIP_PITCH_R
+  - 0.5 # 02 J12_WAIST_YAW
+  - 0.5 # 03 J01_HIP_ROLL_L
+  - 0.5 # 04 J07_HIP_ROLL_R
+  - 0.5 # 05 J13_SHOULDER_PITCH_L
+  - 0.5 # 06 J18_SHOULDER_PITCH_R
+  - 0.5 # 07 J23_HEAD_YAW
+  - 0.5 # 08 J02_HIP_YAW_L
+  - 0.5 # 09 J08_HIP_YAW_R
+  - 0.5 # 10 J14_SHOULDER_ROLL_L
+  - 0.5 # 11 J19_SHOULDER_ROLL_R
+  - 0.5 # 12 J03_KNEE_PITCH_L
+  - 0.5 # 13 J09_KNEE_PITCH_R
+  - 0.5 # 14 J15_SHOULDER_YAW_L
+  - 0.5 # 15 J20_SHOULDER_YAW_R
+  - 0.5 # 16 J04_ANKLE_PITCH_L
+  - 0.5 # 17 J10_ANKLE_PITCH_R
+  - 0.5 # 18 J16_ELBOW_PITCH_L
+  - 0.5 # 19 J21_ELBOW_PITCH_R
+  - 0.5 # 20 J05_ANKLE_ROLL_L
+  - 0.5 # 21 J11_ANKLE_ROLL_R
+  - 0.5 # 22 J17_ELBOW_YAW_L
+  - 0.5 # 23 J22_ELBOW_YAW_R
+
+resident_control: false
+
+transition_duration_s: 0.3
