@@ -15,7 +15,7 @@
  * Key differences from the walking Runner:
  *   - Uses a **reference trajectory** (.npz) instead of real-time gamepad input
  *   - Observation assembly is **registry-driven** — each observation component is
- *     registered by name and retrieved dynamically via wbt_obs::GetObservation()
+ *     registered by name and retrieved dynamically via rl_dance_obs::GetObservation()
  *   - Supports **per-component history buffers** with configurable history lengths
  *   - Performs **yaw alignment** on the first frame to align the reference trajectory
  *     with the robot's actual heading at startup
@@ -191,9 +191,9 @@ void RlDanceExampleRunner::Run() {
  * @brief Assembles the full observation vector from registry-based observation components.
  *
  * Unlike the walking Runner which manually concatenates sensor data, this Runner
- * uses a dynamic registry system (wbt_obs). Each observation component is:
+ * uses a dynamic registry system (rl_dance_obs). Each observation component is:
  *   1. Looked up by name from the `observation_names` config list
- *   2. Computed by its registered function via wbt_obs::GetObservation()
+ *   2. Computed by its registered function via rl_dance_obs::GetObservation()
  *   3. Maintained in its own sliding-window history buffer
  *   4. Flattened (column-major) into the final observation vector
  *
@@ -221,7 +221,7 @@ void RlDanceExampleRunner::CalculateObservation() {
     const std::string& obs_name = param_->observation_names[i];
 
     // Compute a single-step observation for this component via the registry
-    Eigen::VectorXd single = wbt_obs::GetObservation(obs_name, obs_ctx_);
+    Eigen::VectorXd single = rl_dance_obs::GetObservation(obs_name, obs_ctx_);
 
     // Update the sliding-window history buffer for this component
     Eigen::MatrixXd& buf = observation_history_buffers_[i];
@@ -422,7 +422,7 @@ Eigen::MatrixXd RlDanceExampleRunner::npyFloatToMatrixXd(const cnpy::NpyArray& n
  * @return The number of elements in a single-step observation for this component
  */
 int RlDanceExampleRunner::GetObservationDim(const std::string& name) const {
-  return wbt_obs::GetObservationDim(name, param_->num_actions);
+  return rl_dance_obs::GetObservationDim(name, param_->num_actions);
 }
 
 /**

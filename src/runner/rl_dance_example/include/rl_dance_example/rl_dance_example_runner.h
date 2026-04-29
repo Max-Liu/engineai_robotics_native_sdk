@@ -56,7 +56,7 @@ class RlDanceExampleRunner : public MotionRunner {
   std::shared_ptr<Eigen::VectorXd> mlp_net_action_;
   std::vector<Eigen::MatrixXd> observation_history_buffers_;
 
-  wbt_obs::ObsContext obs_ctx_;
+  rl_dance_obs::ObsContext obs_ctx_;
 
   // --- First frame ---
   bool is_first_time_ = true;

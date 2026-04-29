@@ -8,7 +8,7 @@
 #include "data_store/data_store.h"
 
 /// WBT observation registry: dimensions and getters are registered in wbt_obs_registry.cc.
-namespace wbt_obs {
+namespace rl_dance_obs {
 
 /// Data source for observation computation, populated by WbtRunner.
 /// - Constant parts are filled once in Enter() (data_store, ref_*_all, num_actions, pointers, etc.)
@@ -43,4 +43,4 @@ int GetObservationDim(const std::string& name, int num_actions);
 /// Compute and return a single-step observation vector by name using the registered getter.
 Eigen::VectorXd GetObservation(const std::string& name, const ObsContext& ctx);
 
-}  // namespace wbt_obs
+}  // namespace rl_dance_obs

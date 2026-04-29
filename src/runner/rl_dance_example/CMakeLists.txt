@@ -30,7 +30,9 @@ target_include_directories(${CURRENT_TARGET_NAME}
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/cnpy>
 )
 
-add_subdirectory(include/cnpy)
+if(NOT TARGET cnpy)
+  add_subdirectory(include/cnpy)
+endif()
 
 # Set link libraries of target
 target_link_libraries(${CURRENT_TARGET_NAME}

@@ -14,7 +14,7 @@
 #include "math/roll_pitch_yaw.h"
 #include "math/rotation_matrix.h"
 
-namespace wbt_obs {
+namespace rl_dance_obs {
 
 namespace {
 
@@ -195,4 +195,4 @@ Eigen::VectorXd GetObservation(const std::string& name, const ObsContext& ctx) {
   return result;
 }
 
-}  // namespace wbt_obs
+}  // namespace rl_dance_obs
