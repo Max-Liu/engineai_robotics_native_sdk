@@ -146,13 +146,15 @@ observation_names:
     "command",
     "motion_anchor_pos_b",
     "motion_anchor_ori_b",
-    "base_lin_vel",
     "base_ang_vel",
     "joint_pos",
     "joint_vel",
     "actions",
+    "projected_gravity",
+    "joint_error",
+    "motion_phase",
   ]
-observation_history_lengths: [3, 3, 3, 3, 3, 3, 3, 3]
+observation_history_lengths: [3, 3, 3, 3, 3, 3, 3, 3, 3, 3]
 
 transition_duration_s: 0.0
 loop_motion: false

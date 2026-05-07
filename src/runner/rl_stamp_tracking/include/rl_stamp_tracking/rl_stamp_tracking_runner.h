@@ -40,13 +40,6 @@ private:
     bool initialized = false;
   };
 
-  struct DigitalFilter {
-    float feedforward = 1.0F;
-    float feedback = 0.0F;
-    Eigen::VectorXf previous_output;
-    bool initialized = false;
-  };
-
   void InitializeJointMapping();
   void InitializeObservationBuffers();
   void InitializeReferenceAlignment();
@@ -57,8 +50,6 @@ private:
   Eigen::VectorXf BuildObservation(const ReferenceState &reference);
   Eigen::VectorXf ProcessObservationTerm(size_t term_index,
                                          const Eigen::VectorXf &value);
-  Eigen::VectorXf ApplyDigitalFilter(const std::string &name,
-                                     const Eigen::VectorXf &value);
   int GetObservationDim(const std::string &name) const;
   int ComputeObservationDim() const;
   void CalculateWarmupMotorCommand(const ReferenceState &reference);
@@ -87,7 +78,6 @@ private:
   Eigen::VectorXf last_action_policy_;
   Eigen::VectorXf zero_observation_;
   std::vector<ObservationHistory> observation_histories_;
-  std::vector<DigitalFilter> digital_filters_;
   Eigen::Matrix3f reference_alignment_rot_ = Eigen::Matrix3f::Identity();
   Eigen::Quaternionf reference_alignment_quat_ = Eigen::Quaternionf::Identity();
   Eigen::Vector3f reference_alignment_pos_ = Eigen::Vector3f::Zero();

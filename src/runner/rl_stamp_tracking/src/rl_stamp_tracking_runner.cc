@@ -17,20 +17,23 @@
 namespace runner {
 namespace {
 
-constexpr std::array<std::string_view, 8> kExpectedObservationNames = {
+constexpr std::array<std::string_view, 10> kExpectedObservationNames = {
     "command",
     "motion_anchor_pos_b",
     "motion_anchor_ori_b",
-    "base_lin_vel",
     "base_ang_vel",
     "joint_pos",
     "joint_vel",
     "actions",
+    "projected_gravity",
+    "joint_error",
+    "motion_phase",
 };
 
 constexpr int kAnchorBodyIndex = 0;
 constexpr int kRotationColumnsRows = 3;
 constexpr int kRotationColumnsCols = 2;
+constexpr float kTwoPi = 6.2831853071795864769F;
 
 int ElementCount(MNN::Tensor *tensor) {
   if (!tensor)
@@ -123,6 +126,21 @@ Eigen::Quaternionf RowToQuaternion(const Eigen::MatrixXf &matrix, int row) {
 
 Eigen::Vector3f RowToVector3(const Eigen::MatrixXf &matrix, int row) {
   return Eigen::Vector3f(matrix(row, 0), matrix(row, 1), matrix(row, 2));
+}
+
+Eigen::VectorXf BuildMotionPhase(int time_step, int time_step_total) {
+  Eigen::VectorXf motion_phase(2);
+  if (time_step_total <= 0) {
+    motion_phase << 0.0F, 1.0F;
+    return motion_phase;
+  }
+
+  const int wrapped_step = ((time_step % time_step_total) + time_step_total) %
+                           time_step_total;
+  const float phase = kTwoPi * static_cast<float>(wrapped_step) /
+                      static_cast<float>(time_step_total);
+  motion_phase << std::sin(phase), std::cos(phase);
+  return motion_phase;
 }
 
 } // namespace
@@ -376,7 +394,7 @@ void RlStampTrackingRunner::InitializeJointMapping() {
 void RlStampTrackingRunner::InitializeObservationBuffers() {
   if (param_->observation_names.size() != kExpectedObservationNames.size()) {
     throw std::runtime_error(
-        "Stamp observation_names must contain exactly 8 terms");
+        "Stamp observation_names must contain exactly 10 terms");
   }
   for (size_t i = 0; i < kExpectedObservationNames.size(); ++i) {
     if (param_->observation_names[i] != kExpectedObservationNames[i]) {
@@ -386,6 +404,7 @@ void RlStampTrackingRunner::InitializeObservationBuffers() {
           param_->observation_names[i]);
     }
   }
+
   if (param_->observation_history_lengths.size() !=
       param_->observation_names.size()) {
     throw std::runtime_error(
@@ -394,6 +413,7 @@ void RlStampTrackingRunner::InitializeObservationBuffers() {
 
   observation_histories_.clear();
   observation_histories_.reserve(param_->observation_names.size());
+  int single_frame_dim = 0;
   for (size_t i = 0; i < param_->observation_names.size(); ++i) {
     ObservationHistory history;
     history.history_length = param_->observation_history_lengths[i];
@@ -404,20 +424,12 @@ void RlStampTrackingRunner::InitializeObservationBuffers() {
     }
     history.values =
         Eigen::VectorXf::Zero(history.history_length * history.value_dim);
+    single_frame_dim += history.value_dim;
     observation_histories_.push_back(std::move(history));
   }
-
-  digital_filters_.clear();
-  digital_filters_.resize(param_->observation_names.size());
-  for (size_t i = 0; i < param_->observation_names.size(); ++i) {
-    const auto &name = param_->observation_names[i];
-    if (name == "base_lin_vel" || name == "base_ang_vel") {
-      digital_filters_[i].feedforward = 0.65F;
-      digital_filters_[i].feedback = 0.35F;
-    } else if (name == "joint_vel") {
-      digital_filters_[i].feedforward = 0.75F;
-      digital_filters_[i].feedback = 0.25F;
-    }
+  if (single_frame_dim != 161) {
+    throw std::runtime_error("Unexpected Stamp single-frame observation dim: " +
+                             std::to_string(single_frame_dim));
   }
 }
 
@@ -464,10 +476,6 @@ void RlStampTrackingRunner::ResetObservationBuffers() {
   for (auto &history : observation_histories_) {
     history.values.setZero();
     history.initialized = false;
-  }
-  for (auto &filter : digital_filters_) {
-    filter.previous_output.resize(0);
-    filter.initialized = false;
   }
 }
 
@@ -544,34 +552,46 @@ RlStampTrackingRunner::BuildObservation(const ReferenceState &reference) {
   Eigen::VectorXf motion_anchor_ori_b =
       FlattenRotationFirstTwoColumns(motion_anchor_quat_b);
 
-  Eigen::Vector3f base_lin_vel =
-      (robot_anchor_rot.transpose() * base.frame.twist.linear).cast<float>();
   Eigen::Vector3f base_ang_vel =
       (robot_anchor_rot.transpose() * base.frame.twist.angular).cast<float>();
+  Eigen::Vector3f projected_gravity =
+      (-robot_anchor_rot.transpose() * Eigen::Vector3d::UnitZ()).cast<float>();
 
   if (iter_ < 5 || iter_ % 50 == 0) {
     LOG(INFO) << "[DEBUG-STAMP] iter=" << iter_
               << " robot_anchor_pos=(" << robot_anchor_pos.transpose() << ")"
               << " reference_anchor_pos=(" << reference_anchor_pos.transpose()
               << ") motion_anchor_pos_b=(" << motion_anchor_pos_b.transpose()
-              << ") base_lin_vel=(" << base_lin_vel.transpose()
-              << ") base_ang_vel=(" << base_ang_vel.transpose() << ")";
+              << ") base_ang_vel=(" << base_ang_vel.transpose()
+              << ") projected_gravity=(" << projected_gravity.transpose()
+              << ")";
   }
 
+  Eigen::VectorXf robot_joint_pos =
+      q_real_(policy2deploy_joint_idx_).cast<float>();
   Eigen::VectorXf joint_pos =
-      (q_real_(policy2deploy_joint_idx_) - default_joint_pos_policy_)
-          .cast<float>();
+      (robot_joint_pos.cast<double>() - default_joint_pos_policy_).cast<float>();
   Eigen::VectorXf joint_vel = qd_real_(policy2deploy_joint_idx_).cast<float>();
+  Eigen::VectorXf joint_error = reference.joint_pos - robot_joint_pos;
+  Eigen::VectorXf motion_phase =
+      BuildMotionPhase(time_step_, param_->time_step_total);
 
-  std::array<Eigen::VectorXf, 8> terms = {
-      command,      motion_anchor_pos_b, motion_anchor_ori_b,
-      base_lin_vel, base_ang_vel,        joint_pos,
-      joint_vel,    last_action_policy_,
+  std::array<Eigen::VectorXf, 10> terms = {
+      command,      motion_anchor_pos_b, motion_anchor_ori_b, base_ang_vel,
+      joint_pos,    joint_vel,           last_action_policy_, projected_gravity,
+      joint_error,  motion_phase,
   };
 
   Eigen::VectorXf obs(ComputeObservationDim());
   int cursor = 0;
   for (size_t i = 0; i < terms.size(); ++i) {
+    const int expected_dim = GetObservationDim(param_->observation_names[i]);
+    if (terms[i].size() != expected_dim) {
+      throw std::runtime_error("Observation term " +
+                               param_->observation_names[i] + " has size " +
+                               std::to_string(terms[i].size()) +
+                               ", expected " + std::to_string(expected_dim));
+    }
     Eigen::VectorXf processed = ProcessObservationTerm(i, terms[i]);
     obs.segment(cursor, processed.size()) = processed;
     cursor += static_cast<int>(processed.size());
@@ -594,15 +614,9 @@ RlStampTrackingRunner::ProcessObservationTerm(size_t term_index,
                              ", expected " + std::to_string(history.value_dim));
   }
 
-  Eigen::VectorXf filtered = value;
-  if (history.history_length > 1) {
-    filtered = ApplyDigitalFilter(param_->observation_names[term_index], value);
-  }
-
   if (!history.initialized) {
     for (int i = 0; i < history.history_length; ++i) {
-      history.values.segment(i * history.value_dim, history.value_dim) =
-          filtered;
+      history.values.segment(i * history.value_dim, history.value_dim) = value;
     }
     history.initialized = true;
   } else {
@@ -611,35 +625,10 @@ RlStampTrackingRunner::ProcessObservationTerm(size_t term_index,
       history.values.segment(0, shift_size) =
           history.values.segment(history.value_dim, shift_size).eval();
     }
-    history.values.tail(history.value_dim) = filtered;
+    history.values.tail(history.value_dim) = value;
   }
 
   return history.values;
-}
-
-Eigen::VectorXf
-RlStampTrackingRunner::ApplyDigitalFilter(const std::string &name,
-                                          const Eigen::VectorXf &value) {
-  auto it = std::find(param_->observation_names.begin(),
-                      param_->observation_names.end(), name);
-  if (it == param_->observation_names.end()) {
-    return value;
-  }
-  const size_t index =
-      static_cast<size_t>(std::distance(param_->observation_names.begin(), it));
-  DigitalFilter &filter = digital_filters_[index];
-  if (filter.feedforward == 1.0F && filter.feedback == 0.0F) {
-    return value;
-  }
-  if (!filter.initialized || filter.previous_output.size() != value.size()) {
-    filter.previous_output = Eigen::VectorXf::Zero(value.size());
-    filter.initialized = true;
-  }
-
-  Eigen::VectorXf output =
-      filter.feedforward * value + filter.feedback * filter.previous_output;
-  filter.previous_output = output;
-  return output;
 }
 
 int RlStampTrackingRunner::GetObservationDim(const std::string &name) const {
@@ -649,9 +638,9 @@ int RlStampTrackingRunner::GetObservationDim(const std::string &name) const {
     return 3;
   if (name == "motion_anchor_ori_b")
     return 6;
-  if (name == "base_lin_vel")
-    return 3;
   if (name == "base_ang_vel")
+    return 3;
+  if (name == "projected_gravity")
     return 3;
   if (name == "joint_pos")
     return param_->num_actions;
@@ -659,6 +648,10 @@ int RlStampTrackingRunner::GetObservationDim(const std::string &name) const {
     return param_->num_actions;
   if (name == "actions")
     return param_->num_actions;
+  if (name == "joint_error")
+    return param_->num_actions;
+  if (name == "motion_phase")
+    return 2;
   return 0;
 }
 
