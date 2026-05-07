@@ -128,7 +128,8 @@ class VirtualGamepadWidget(QWidget):
             "pd_stand: [LB, A]": ("LB", "A"),
             "passive: [LB, RB]": ("LB", "RB"),
             "walk: [LB, B]": ("LB", "B"),
-            "dance: [RB, B]": ("RB", "B")
+            "dance: [RB, B]": ("RB", "B"),
+            "stamp: [RB, A]": ("RB", "A")
         }
 
         self.init_ui()

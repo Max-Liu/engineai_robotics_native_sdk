@@ -155,11 +155,15 @@ python3 tools/virtual_gamepad/virtual_gamepad.py
 | passive  | idle     | LB + START        | 回到未激活状态         |
 | passive  | pd_stand | LB + A            | 进入稳定站立控制任务      |
 | pd_stand | walk     | LB + B            | 建立稳定站立后，进入行走任务  |
-| pd_stand | dance    | LB + CROSS_X_DOWN | 建立稳定站立后，进入跳舞任务  |
+| pd_stand | dance    | RB + B            | 建立稳定站立后，进入跳舞任务  |
+| pd_stand | stamp    | RB + A            | 触发 Stamp 跺脚跟踪动作  |
 | walk     | pd_stand | LB + A            | 从行走任务回到稳定站立控制任务 |
-| walk     | dance    | LB + CROSS_X_DOWN | 从行走任务切换到跳舞任务    |
+| walk     | dance    | RB + B            | 从行走任务切换到跳舞任务    |
+| walk     | stamp    | RB + A            | 从行走任务触发 Stamp 动作 |
 | dance    | pd_stand | LB + A            | 从舞蹈任务回到稳定站立控制任务 |
 | dance    | walk     | LB + B            | 从舞蹈任务切换到行走任务    |
+| dance    | stamp    | RB + A            | 从舞蹈任务触发 Stamp 动作 |
+| stamp    | pd_stand | 自动 / LB + A      | Stamp 动作结束后回到稳定站立 |
 
 
 #### 状态流转示意
@@ -176,11 +180,15 @@ stateDiagram-v2
     state 运动控制 {
         direction LR
         pd_stand --> walk : LB + B
-        pd_stand --> dance : LB + CROSS_X_DOWN
+        pd_stand --> dance : RB + B
+        pd_stand --> stamp : RB + A
         walk --> pd_stand : LB + A
         dance --> walk : LB + B
         dance --> pd_stand : LB + A
-        walk --> dance : LB + CROSS_X_DOWN
+        walk --> dance : RB + B
+        walk --> stamp : RB + A
+        dance --> stamp : RB + A
+        stamp --> pd_stand : 自动 / LB + A
         
     }
 

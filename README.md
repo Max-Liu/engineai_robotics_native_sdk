@@ -198,11 +198,15 @@ After executing `./run.sh` or `./run_robot.sh`, the system enters the **idle** s
 | passive | idle | LB + START | Return to inactive state |
 | passive | pd_stand | LB + A | Enter stable standing control task |
 | pd_stand | walk | LB + B | Enter walking task after stable standing |
-| pd_stand | dance | LB + CROSS_X_DOWN | Enter dance task after stable standing |
+| pd_stand | dance | RB + B | Enter dance task after stable standing |
+| pd_stand | stamp | RB + A | Trigger Stamp tracking action |
 | walk | pd_stand | LB + A | Return to stable standing from walking |
-| walk | dance | LB + CROSS_X_DOWN | Switch from walking to dance task |
+| walk | dance | RB + B | Switch from walking to dance task |
+| walk | stamp | RB + A | Trigger Stamp tracking action from walking |
 | dance | pd_stand | LB + A | Return to stable standing from dance |
 | dance | walk | LB + B | Switch from dance to walking task |
+| dance | stamp | RB + A | Trigger Stamp tracking action from dance |
+| stamp | pd_stand | auto / LB + A | Return to stable standing after Stamp |
 
 #### State Flow Diagram
 
@@ -218,11 +222,15 @@ stateDiagram-v2
     state Motion_Control {
         direction LR
         pd_stand --> walk : LB + B
-        pd_stand --> dance : LB + CROSS_X_DOWN
+        pd_stand --> dance : RB + B
+        pd_stand --> stamp : RB + A
         walk --> pd_stand : LB + A
         dance --> walk : LB + B
         dance --> pd_stand : LB + A
-        walk --> dance : LB + CROSS_X_DOWN
+        walk --> dance : RB + B
+        walk --> stamp : RB + A
+        dance --> stamp : RB + A
+        stamp --> pd_stand : auto / LB + A
         
     }
 
