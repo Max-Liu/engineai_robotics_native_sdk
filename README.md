@@ -200,13 +200,17 @@ After executing `./run.sh` or `./run_robot.sh`, the system enters the **idle** s
 | pd_stand | walk | LB + B | Enter walking task after stable standing |
 | pd_stand | dance | RB + B | Enter dance task after stable standing |
 | pd_stand | stamp | RB + A | Trigger Stamp tracking action |
+| pd_stand | power_shot | RB + X | Trigger Power Shot tracking action |
 | walk | pd_stand | LB + A | Return to stable standing from walking |
 | walk | dance | RB + B | Switch from walking to dance task |
 | walk | stamp | RB + A | Trigger Stamp tracking action from walking |
+| walk | power_shot | RB + X | Trigger Power Shot tracking action from walking |
 | dance | pd_stand | LB + A | Return to stable standing from dance |
 | dance | walk | LB + B | Switch from dance to walking task |
 | dance | stamp | RB + A | Trigger Stamp tracking action from dance |
+| dance | power_shot | RB + X | Trigger Power Shot tracking action from dance |
 | stamp | pd_stand | auto / LB + A | Return to stable standing after Stamp |
+| power_shot | walk | auto / LB + B | Enter walking task after Power Shot Tracking |
 
 #### State Flow Diagram
 
@@ -224,13 +228,17 @@ stateDiagram-v2
         pd_stand --> walk : LB + B
         pd_stand --> dance : RB + B
         pd_stand --> stamp : RB + A
+        pd_stand --> power_shot : RB + X
         walk --> pd_stand : LB + A
         dance --> walk : LB + B
         dance --> pd_stand : LB + A
         walk --> dance : RB + B
         walk --> stamp : RB + A
+        walk --> power_shot : RB + X
         dance --> stamp : RB + A
+        dance --> power_shot : RB + X
         stamp --> pd_stand : auto / LB + A
+        power_shot --> walk : auto / LB + B
         
     }
 

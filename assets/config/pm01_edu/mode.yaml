@@ -47,6 +47,8 @@ mode:
       scope: rl_dance_example/default
     - tag: rl_stamp_tracking
       scope: rl_stamp_tracking/default
+    - tag: rl_power_shot_tracking
+      scope: rl_power_shot_tracking/default
     - tag: ros2_bridge
       scope: ros2_bridge/default
 
@@ -83,5 +85,7 @@ mode:
       scope: rl_dance_example/default
     - tag: rl_stamp_tracking
       scope: rl_stamp_tracking/default
+    - tag: rl_power_shot_tracking
+      scope: rl_power_shot_tracking/default
     - tag: ros2_bridge
       scope: ros2_bridge/default
