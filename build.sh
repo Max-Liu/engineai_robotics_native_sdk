@@ -11,6 +11,24 @@ build_dir="$source_dir/build"
 # build_type: release, debug, releasewithdebinfo
 build_type="releasewithdebinfo"
 
+clear_stale_cmake_cache() {
+  local cache_file="$build_dir/CMakeCache.txt"
+  if [ ! -f "$cache_file" ]; then
+    return
+  fi
+
+  local cached_source_dir
+  cached_source_dir=$(grep -E '^CMAKE_HOME_DIRECTORY:INTERNAL=' "$cache_file" | cut -d= -f2- || true)
+  if [ -n "$cached_source_dir" ] && [ "$cached_source_dir" != "$source_dir" ]; then
+    echo "[INFO] CMake source path changed:"
+    echo "[INFO]   cached:  $cached_source_dir"
+    echo "[INFO]   current: $source_dir"
+    echo "[INFO] Removing stale top-level CMake cache."
+    rm -f "$cache_file"
+    rm -rf "$build_dir/CMakeFiles"
+  fi
+}
+
 build_tests="OFF"
 module_name=""
 while getopts ":j:t:m:T" opt; do
@@ -62,7 +80,9 @@ if [ $? -ne 0 ]; then
 fi
 
 echo "Building project..."
-mkdir -p $build_dir && cd $build_dir
+mkdir -p $build_dir
+clear_stale_cmake_cache
+cd $build_dir
 # Checks if only compiling a specific module
 if [ -n "$module_name" ]; then
   # Checks if build directory and CMakeCache exist

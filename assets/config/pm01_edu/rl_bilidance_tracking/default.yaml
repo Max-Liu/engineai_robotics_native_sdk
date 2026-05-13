@@ -1,5 +1,5 @@
-policy_file: "rl_power_shot_tracking/policies/policy.mnn"
-time_step_total: 172
+policy_file: "rl_bilidance_tracking/policies/policy.mnn"
+time_step_total: 2564
 
 joint_names:
   [

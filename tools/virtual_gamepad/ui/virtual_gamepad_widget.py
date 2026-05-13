@@ -131,6 +131,7 @@ class VirtualGamepadWidget(QWidget):
             "dance: [RB, B]": ("RB", "B"),
             "stamp: [RB, A]": ("RB", "A"),
             "power_shot: [RB, X]": ("RB", "X"),
+            "bilidance: [RB, Y]": ("RB", "Y"),
         }
 
         self.init_ui()

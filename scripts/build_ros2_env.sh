@@ -14,4 +14,5 @@ colcon --log-base "$root_dir/build/ros2_env/log" build \
   --build-base "$root_dir/build/ros2_env/build" \
   --install-base "$root_dir/build/ros2_env/install" \
   --test-result-base "$root_dir/build/ros2_env/test_results" \
+  --cmake-clean-cache \
   --merge-install
